@@ -14,7 +14,7 @@ app.use(express.json());
 app.use(express.static("public"))
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: 'models/gemini-2.0-flash' });
+const model = genAI.getGenerativeModel({ model: 'models/gemini-2.5-flash' });
 
 app.post('/api/chat', async (req, res) => {
     const userMessage = req.body.message;

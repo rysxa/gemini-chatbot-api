@@ -1,26 +1,55 @@
-const form = document.getElementById('chat-form');
-const input = document.getElementById('user-input');
+const chatForm = document.getElementById('chat-form');
+const userInput = document.getElementById('user-input');
 const chatBox = document.getElementById('chat-box');
 
-form.addEventListener('submit', function (e) {
+/**
+ * Appends a message to the chat box.
+ * @param {string} message - The message content.
+ * @param {string} sender - The sender of the message ('user' or 'ai').
+ */
+function appendMessage(message, sender) {
+  const messageElement = document.createElement('div');
+  messageElement.classList.add('message', sender);
+  messageElement.textContent = message;
+  chatBox.appendChild(messageElement);
+  chatBox.scrollTop = chatBox.scrollHeight; // Scroll to the bottom
+}
+
+chatForm.addEventListener('submit', async (e) => {
   e.preventDefault();
 
-  const userMessage = input.value.trim();
-  if (!userMessage) return;
+  const userMessage = userInput.value.trim();
+  if (!userMessage) {
+    return;
+  }
 
-  appendMessage('user', userMessage);
-  input.value = '';
+  // Display user's message
+  appendMessage(userMessage, 'user');
+  userInput.value = '';
 
-  // Simulasi dummy balasan bot (placeholder)
-  setTimeout(() => {
-    appendMessage('bot', 'Gemini is thinking... (this is dummy response)');
-  }, 1000);
+  try {
+    const response = await fetch('/api/chat', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ message: userMessage }),
+    });
+
+    if (!response.ok) {
+      // Handle HTTP errors
+      const errorData = await response.json();
+      throw new Error(errorData.reply || `HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const aiReply = data.reply;
+
+    // Display AI's message
+    appendMessage(aiReply, 'ai');
+
+  } catch (error) {
+    console.error('Error fetching AI reply:', error);
+    appendMessage(`Sorry, something went wrong: ${error.message}`, 'ai');
+  }
 });
-
-function appendMessage(sender, text) {
-  const msg = document.createElement('div');
-  msg.classList.add('message', sender);
-  msg.textContent = text;
-  chatBox.appendChild(msg);
-  chatBox.scrollTop = chatBox.scrollHeight;
-}
