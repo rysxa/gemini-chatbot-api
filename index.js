@@ -7,7 +7,7 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const HOST = process.env.HOST || "localhost";
+const HOST = process.env.HOST || "http://localhost";
 
 app.use(cors());
 app.use(express.json());
@@ -35,5 +35,5 @@ app.post('/api/chat', async (req, res) => {
 })
 
 app.listen(PORT, () => {
-    console.log(`Server is running on http://${HOST}:${PORT}`);
+    console.log(`Server is running on ${HOST}:${PORT}`);
 });
