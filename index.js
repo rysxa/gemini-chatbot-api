@@ -25,12 +25,13 @@ app.post('/api/chat', async (req, res) => {
 
     try {
         const result = await model.generateContent(userMessage);
-        const response = await result.response;
-        const text = await response.text();
+        const response = result.response;
+        const text = response.text();
 
         res.status(200).json({ reply: text });
     } catch (error) {
-        res.status(500).json({ reply: "Something went wrong" });
+        console.error("Gemini API error:", error);
+        res.status(500).json({ reply: error.message || "Something went wrong" });
     }
 })
 
