@@ -35,6 +35,11 @@ app.post('/api/chat', async (req, res) => {
     }
 })
 
-app.listen(PORT, () => {
-    console.log(`Server is running on ${HOST}:${PORT}`);
-});
+// Only start local server outside of Vercel
+if (process.env.VERCEL !== '1') {
+    app.listen(PORT, () => {
+        console.log(`Server is running on ${HOST}:${PORT}`);
+    });
+}
+
+export default app;
