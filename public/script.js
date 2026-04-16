@@ -3,53 +3,105 @@ const userInput = document.getElementById('user-input');
 const chatBox = document.getElementById('chat-box');
 
 /**
- * Appends a message to the chat box.
+ * Format current time as HH:MM
+ */
+function getTime() {
+  return new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+}
+
+/**
+ * Remove welcome message on first interaction
+ */
+function removeWelcome() {
+  const welcome = chatBox.querySelector('.welcome-message');
+  if (welcome) welcome.remove();
+}
+
+/**
+ * Appends a message bubble to the chat box.
  * @param {string} message - The message content.
- * @param {string} sender - The sender of the message ('user' or 'ai').
+ * @param {string} sender - 'user' or 'ai'
+ * @returns {HTMLElement} The message element
  */
 function appendMessage(message, sender) {
-  const messageElement = document.createElement('div');
-  messageElement.classList.add('message', sender);
-  messageElement.textContent = message;
-  chatBox.appendChild(messageElement);
-  chatBox.scrollTop = chatBox.scrollHeight; // Scroll to the bottom
+  removeWelcome();
+
+  const wrapper = document.createElement('div');
+  wrapper.classList.add('message', sender);
+
+  const content = document.createElement('div');
+  content.classList.add('message-content');
+  content.textContent = message;
+
+  const time = document.createElement('span');
+  time.classList.add('message-time');
+  time.textContent = getTime();
+
+  wrapper.appendChild(content);
+  wrapper.appendChild(time);
+  chatBox.appendChild(wrapper);
+  chatBox.scrollTop = chatBox.scrollHeight;
+
+  return wrapper;
+}
+
+/**
+ * Show animated typing indicator
+ * @returns {HTMLElement} The typing indicator element
+ */
+function showTyping() {
+  removeWelcome();
+
+  const wrapper = document.createElement('div');
+  wrapper.classList.add('message', 'ai', 'typing-indicator');
+
+  const content = document.createElement('div');
+  content.classList.add('message-content');
+
+  for (let i = 0; i < 3; i++) {
+    const dot = document.createElement('span');
+    dot.classList.add('typing-dot');
+    content.appendChild(dot);
+  }
+
+  wrapper.appendChild(content);
+  chatBox.appendChild(wrapper);
+  chatBox.scrollTop = chatBox.scrollHeight;
+
+  return wrapper;
 }
 
 chatForm.addEventListener('submit', async (e) => {
   e.preventDefault();
 
   const userMessage = userInput.value.trim();
-  if (!userMessage) {
-    return;
-  }
+  if (!userMessage) return;
 
-  // Display user's message
   appendMessage(userMessage, 'user');
   userInput.value = '';
+
+  const typingEl = showTyping();
 
   try {
     const response = await fetch('/api/chat', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ message: userMessage }),
     });
 
+    typingEl.remove();
+
     if (!response.ok) {
-      // Handle HTTP errors
       const errorData = await response.json();
       throw new Error(errorData.reply || `HTTP error! status: ${response.status}`);
     }
 
     const data = await response.json();
-    const aiReply = data.reply;
-
-    // Display AI's message
-    appendMessage(aiReply, 'ai');
+    appendMessage(data.reply, 'ai');
 
   } catch (error) {
+    typingEl.remove();
     console.error('Error fetching AI reply:', error);
-    appendMessage(`Sorry, something went wrong: ${error.message}`, 'ai');
+    appendMessage(`Maaf, terjadi kesalahan: ${error.message}`, 'ai');
   }
 });
