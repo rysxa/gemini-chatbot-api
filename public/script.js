@@ -2,6 +2,9 @@ const chatForm = document.getElementById('chat-form');
 const userInput = document.getElementById('user-input');
 const chatBox = document.getElementById('chat-box');
 
+// Generate a session ID for this browser tab
+const sessionId = 'session_' + Math.random().toString(36).slice(2);
+
 /**
  * Format current time as HH:MM
  */
@@ -19,9 +22,6 @@ function removeWelcome() {
 
 /**
  * Appends a message bubble to the chat box.
- * @param {string} message - The message content.
- * @param {string} sender - 'user' or 'ai'
- * @returns {HTMLElement} The message element
  */
 function appendMessage(message, sender) {
   removeWelcome();
@@ -47,7 +47,6 @@ function appendMessage(message, sender) {
 
 /**
  * Show animated typing indicator
- * @returns {HTMLElement} The typing indicator element
  */
 function showTyping() {
   removeWelcome();
@@ -86,7 +85,7 @@ chatForm.addEventListener('submit', async (e) => {
     const response = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: userMessage }),
+      body: JSON.stringify({ message: userMessage, sessionId }),
     });
 
     typingEl.remove();
@@ -102,6 +101,6 @@ chatForm.addEventListener('submit', async (e) => {
   } catch (error) {
     typingEl.remove();
     console.error('Error fetching AI reply:', error);
-    appendMessage(`Maaf, terjadi kesalahan: ${error.message}`, 'ai');
+    appendMessage('Aduh, aku lagi ada gangguan teknis nih 😅 Coba lagi sebentar ya!', 'ai');
   }
 });
