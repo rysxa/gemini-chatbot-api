@@ -21,6 +21,21 @@ function removeWelcome() {
 }
 
 /**
+ * Convert basic markdown to HTML
+ */
+function parseMarkdown(text) {
+  return text
+    // Bold: **text** or __text__
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/__(.+?)__/g, '<strong>$1</strong>')
+    // Italic: *text* or _text_
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    .replace(/_(.+?)_/g, '<em>$1</em>')
+    // Newlines to <br>
+    .replace(/\n/g, '<br>');
+}
+
+/**
  * Appends a message bubble to the chat box.
  */
 function appendMessage(message, sender) {
@@ -31,7 +46,12 @@ function appendMessage(message, sender) {
 
   const content = document.createElement('div');
   content.classList.add('message-content');
-  content.textContent = message;
+
+  if (sender === 'ai') {
+    content.innerHTML = parseMarkdown(message);
+  } else {
+    content.textContent = message;
+  }
 
   const time = document.createElement('span');
   time.classList.add('message-time');
